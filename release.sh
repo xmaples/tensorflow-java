@@ -40,13 +40,13 @@ fi
 export GPG_TTY=$(tty)
 set -ex
 
-docker run \
-  -e IN_CONTAINER="true" \
-  -e STAGING_SEQ="${STAGING_SEQ}" \
-  -e GPG_TTY="${GPG_TTY}" \
-  -v ${PWD}:/tensorflow-java \
-  -v ${HOME}/.gnupg:/root/.gnupg \
-  -w /tensorflow-java \
-  -it \
-  maven:3.6.3-jdk-8  \
-  ${CMD}
+# docker run \
+#   -e IN_CONTAINER="true" \
+#   -e STAGING_SEQ="${STAGING_SEQ}" \
+#   -e GPG_TTY="${GPG_TTY}" \
+#   -v ${PWD}:/tensorflow-java \
+#   -v ${HOME}/.gnupg:/root/.gnupg \
+#   -w /tensorflow-java \
+#   -it \
+#   maven:3.6.3-jdk-8  \
+  env STAGING_SEQ="${STAGING_SEQ}" IN_CONTAINER="true" ${CMD}

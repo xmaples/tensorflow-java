@@ -21,12 +21,25 @@ set -e
 
 IN_CONTAINER="${IN_CONTAINER:-false}"
 
-MVN_OPTIONS="-B -e --settings ${PWD}/settings.xml -Pdeploying"
+# MVN_OPTIONS="-B -e --settings ${PWD}/settings.xml -Pdeploying"
+MVN_OPTIONS=" -B -e `#--settings ${PWD}/settings.xml` -Pdeploying -Dnative.build.skip=false `#-Djavacpp.platform=linux-arm64` -Dgpg.skip=true -Dmaven.javadoc.skip=true -Dstyle.color=always"
 
 mvn_property() {
   local property="$1"
   mvn exec:exec $MVN_OPTIONS -q -N -Dexec.executable='echo' -Dexec.args="\${${property}}"
 }
+
+# predefined architecture-specified build flags
+JAVACPP_PLATFORM=`mvn exec:exec $MVN_OPTIONS -f tensorflow-core/pom.xml -q -N -Dexec.executable='echo' -Dexec.args='${javacpp.platform}'`
+if [[ "$JAVACPP_PLATFORM" == *x86* ]]; then 
+  BUILD_FLAGS_ARCH_PREDEFINED="--copt=-msse4.1 --copt=-msse4.2 --copt=-mavx `#--copt=-mavx2 --copt=-mfma`"
+# elif [[ "$JAVACPP_PLATFORM" == *aarch64* || "$JAVACPP_PLATFORM" == *arm64* ]]; then
+#   BUILD_FLAGS_ARCH_PREDEFINED=""
+# else
+#   # for other archs
+#   BUILD_FLAGS_ARCH_PREDEFINED=""
+fi
+export BUILD_USER_FLAGS="${BUILD_USER_FLAGS:-} ${BUILD_FLAGS_ARCH_PREDEFINED:-}"
 
 #
 # Clean the working directory before doing anything
@@ -70,7 +83,7 @@ else
 
   MVN_OPTIONS="$MVN_OPTIONS -Preleasing -DstagingRepositoryId=orgtensorflow-${STAGING_SEQ}"
 
-  apt-get -qq update && apt-get -qq install -y gnupg2
+   apt-get -qq update && apt-get -qq install -y gnupg2
 fi
 
 #
@@ -110,9 +123,9 @@ done
 # modules in the POM and depends on the javacpp.platform.extension property.
 # Note that the tensorflow-core-api, which needs special care, won't be deployed yet, see below.
 #
-mvn deploy $MVN_OPTIONS
+mvn deploy $MVN_OPTIONS 
 for p in $PLATFORM_EXTS; do
-  mvn deploy $MVN_OPTIONS -Djavacpp.platform.extension=$p -pl tensorflow-core/tensorflow-core-platform$p
+  mvn deploy $MVN_OPTIONS -Djavacpp.platform.extension=$p -pl tensorflow-core/tensorflow-core-platform$p 
 done
 
 # Now deploy manually the tensorflow-core-api with all its native artifacts.

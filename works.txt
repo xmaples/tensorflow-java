@@ -1,0 +1,13 @@
+Compiling tensorflow/java 0.3.1 on arm machines
+
+following https://github.com/tensorflow/java/blob/v0.3.1/CONTRIBUTING.md#building
+
+better on ubuntu other than centos
+
+1. tensorflow/java
+    clone, edit version, deploy....
+2. install tools following the guide https://www.tensorflow.org/install/source  => install bazel(0.4.1), llvm+clang(11.6), python(3.6~3.8) +python libs, gcc-7, jdk 1.8, maven(3.6+)
+
+3. clone tensorflow/tensorflow (v2.4.1), run `./configure`, copy .tf_...bazelrc into `tensorflow-core/tensorflow-core-api/` of the project tensorflow/java
+
+4. run release.sh
